@@ -15,5 +15,7 @@ EXPOSE 5000
 # Move database initialization to an entrypoint script
 COPY entrypoint.sh .
 RUN chmod +x entrypoint.sh
+# Ensure the script has Unix-style line endings
+RUN sed -i 's/\r$//' entrypoint.sh
 
 ENTRYPOINT ["./entrypoint.sh"]

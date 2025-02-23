@@ -1,7 +1,6 @@
 import requests
-from celery import Celery
 from flask import Blueprint, jsonify, request
-from flask_caching import Cache
+from utils.errors import LibraryError
 
 from app import db
 from app.models.book import Book, BorrowedBook
@@ -10,10 +9,7 @@ admin_routes = Blueprint("admin_routes", __name__)
 
 FRONTEND_API_URL = "http://frontend-api:5000"  # Will be used in Docker
 
-celery = Celery("library", broker="redis://redis:6379/0")
 
-
-@celery.task(bind=True, max_retries=3)
 def sync_with_frontend(action, data):
     try:
         response = requests.post(
@@ -32,11 +28,12 @@ def add_book():
     if not all(k in data for k in ["title", "author", "publisher", "category"]):
         return jsonify({"error": "Missing required fields"}), 400
 
-    # book = Book( title=data["title"],
-    #     author=data["author"],
-    #     publisher=data["publisher"],
-    #     category=data["category"],
-    # )
+    book = Book(
+        title=data["title"],
+        author=data["author"],
+        publisher=data["publisher"],
+        category=data["category"],
+    )
 
     book = Book(title="fish")
     db.session.add(book)
@@ -124,6 +121,7 @@ def list_borrowed_books():
     except Exception as e:
         raise LibraryError(f"Failed to fetch borrowed books: {str(e)}", 500)
 
+
 @admin_routes.route("/admin/unavailable-books", methods=["GET"])
 def list_unavailable_books():
     try:
@@ -149,4 +147,3 @@ def list_unavailable_books():
         )
     except Exception as e:
         raise LibraryError(f"Failed to fetch unavailable books: {str(e)}", 500)
-
