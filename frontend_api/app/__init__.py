@@ -6,13 +6,6 @@ import os
 
 db = SQLAlchemy()
 migrate = Migrate()
-api = Api(
-    title="Library Frontend API",
-    version="1.0",
-    description="API for library users to browse and borrow books",
-    doc="/docs",
-)
-
 
 def create_app():
     app = Flask(__name__)
@@ -25,7 +18,6 @@ def create_app():
 
     db.init_app(app)
     migrate.init_app(app, db)
-    api.init_app(app)
 
     return app
 

@@ -1,18 +1,10 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from flask_restx import Api
 import os
 
 db = SQLAlchemy()
 migrate = Migrate()
-api = Api(
-    title="Library Admin API",
-    version="1.0",
-    description="Admin API for managing library books and users",
-    doc="/docs",
-)
-
 
 def create_app():
     app = Flask(__name__)
@@ -25,6 +17,5 @@ def create_app():
 
     db.init_app(app)
     migrate.init_app(app, db)
-    api.init_app(app)
 
     return app
