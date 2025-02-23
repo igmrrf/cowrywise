@@ -2,6 +2,91 @@
 
 This project is a backend assessment task to develop an application that manages books in a library. The system consists of two independent API services: the **Frontend API** for users and the **Backend/Admin API** for administrators.
 
+## Development Setup
+
+### Prerequisites
+
+- Python 3.9 or higher
+- Docker and Docker Compose (for production deployment)
+- pip (Python package manager)
+
+### Local Development
+
+1. Clone the repository:
+```bash
+git clone https://github.com/igmrrf/cowrywise
+cd cowrywise
+```
+2. Set up Frontend API:
+```bash
+cd frontend_api
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+flask run --port=5000
+```
+3. Set up Backend API (in a new terminal):
+```bash
+cd backend_api
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+flask run --port=5001
+```
+The services will be available at:
+
+- Frontend API: http://localhost:5000
+- Backend API: http://localhost:5001
+
+
+## Production Deployment
+
+### Using Docker Compose
+
+1. Build and start the containers:
+```bash
+docker-compose up --build
+```
+This will start:
+
+- Frontend API on port 5000
+- Backend API on port 5001
+
+2. Stopping the services:
+```bash
+docker-compose down
+```
+
+### Manual Docker Deployment
+
+1. Build and run Frontend API:
+```bash
+cd frontend_api
+docker build -t library-frontend .
+docker run -d -p 5000:5000 library-frontend
+```
+2. Build and run Backend API:
+```bash
+cd backend_api
+docker build -t library-backend .
+docker run -d -p 5001:5001 library-backend
+```
+
+### Testing:
+Run tests for each service
+
+1. Frontend API tests
+```bash
+cd frontend_api
+python -m pytest
+```
+
+2. Backend API tests
+```bash
+cd backend_api
+python -m pytest
+```
+
 ## Features
 
 ### Frontend API (User-Facing)
