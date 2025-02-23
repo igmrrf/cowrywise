@@ -3,17 +3,22 @@ from app.models.book import Book, BorrowedBook
 from app.models.user import User
 from app import db
 from datetime import datetime, timedelta
-from utils.errors import (
+from app.utils.errors import (
     BookNotAvailableError,
     ResourceNotFoundError,
     ValidationError,
     LibraryError,
 )
 
-book_routes = Blueprint("book_routes", __name__)
+book_bp = Blueprint("book_routes", __name__)
 
 
-@book_routes.route("/books", methods=["GET"])
+@book_bp.route("/", methods=["GET"])
+def index():
+    return jsonify({"health": "healthy"})
+
+
+@book_bp.route("/books", methods=["GET"])
 def list_books():
     publisher = request.args.get("publisher")
     category = request.args.get("category")
@@ -40,7 +45,7 @@ def list_books():
     )
 
 
-@book_routes.route("/books/<int:book_id>", methods=["GET"])
+@book_bp.route("/books/<int:book_id>", methods=["GET"])
 def get_book(book_id):
     book = Book.query.get_or_404(book_id)
     return jsonify(
@@ -55,7 +60,7 @@ def get_book(book_id):
     )
 
 
-@book_routes.route("/books/<int:book_id>/borrow", methods=["POST"])
+@book_bp.route("/books/<int:book_id>/borrow", methods=["POST"])
 def borrow_book(book_id):
     try:
         data = request.get_json()
@@ -107,7 +112,7 @@ def borrow_book(book_id):
         raise
 
 
-@book_routes.route("/sync/books", methods=["POST"])
+@book_bp.route("/sync/books", methods=["POST"])
 def sync_books():
     data = request.get_json()
 
@@ -129,4 +134,3 @@ def sync_books():
 
     db.session.commit()
     return jsonify({"message": "Sync successful"})
-

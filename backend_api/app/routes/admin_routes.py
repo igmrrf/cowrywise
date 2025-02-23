@@ -1,13 +1,12 @@
 import requests
 from flask import Blueprint, jsonify, request
-from utils.errors import LibraryError
-
+from app.utils.errors import LibraryError
 from app import db
 from app.models.book import Book, BorrowedBook
 
-admin_routes = Blueprint("admin_routes", __name__)
+admin_bp = Blueprint("admin_routes", __name__)
 
-FRONTEND_API_URL = "http://frontend-api:5000"  # Will be used in Docker
+FRONTEND_API_URL = "http://frontend_api:5000"  # Will be used in Docker
 
 
 def sync_with_frontend(action, data):
@@ -21,7 +20,12 @@ def sync_with_frontend(action, data):
         # raise self.retry(exc=exc, countdown=60)  # retry after 1 minute
 
 
-@admin_routes.route("/admin/books", methods=["POST"])
+@admin_bp.route("/admin/", methods=["GET"])
+def index():
+    return jsonify({"health": "healthy"})
+
+
+@admin_bp.route("/books", methods=["POST"])
 def add_book():
     data = request.get_json()
 
@@ -73,7 +77,7 @@ def add_book():
     )
 
 
-@admin_routes.route("/admin/books/<int:book_id>", methods=["DELETE"])
+@admin_bp.route("/books/<int:book_id>", methods=["DELETE"])
 def remove_book(book_id):
     book = Book.query.get_or_404(book_id)
 
@@ -92,7 +96,7 @@ def remove_book(book_id):
     return jsonify({"message": "Book removed successfully"})
 
 
-@admin_routes.route("/admin/users", methods=["GET"])
+@admin_bp.route("/users", methods=["GET"])
 def list_users():
     # Fetch users from frontend API
     try:
@@ -102,7 +106,7 @@ def list_users():
         return jsonify({"error": "Unable to fetch users"}), 500
 
 
-@admin_routes.route("/admin/borrowed-books", methods=["GET"])
+@admin_bp.route("/borrowed-books", methods=["GET"])
 def list_borrowed_books():
     try:
         borrowed_books = BorrowedBook.query.all()
@@ -122,7 +126,7 @@ def list_borrowed_books():
         raise LibraryError(f"Failed to fetch borrowed books: {str(e)}", 500)
 
 
-@admin_routes.route("/admin/unavailable-books", methods=["GET"])
+@admin_bp.route("/unavailable-books", methods=["GET"])
 def list_unavailable_books():
     try:
         unavailable_books = Book.query.filter_by(available=False).all()

@@ -2,22 +2,10 @@ FROM python:3.9-slim
 
 WORKDIR /app
 
-# Install PostgreSQL client
-RUN apt-get update && apt-get install -y postgresql-client && rm -rf /var/lib/apt/lists/*
+COPY requirements.txt ./
 
-COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-ENV FLASK_APP=run.py
-ENV FLASK_ENV=production
-
-EXPOSE 5001
-
-COPY entrypoint.sh .
-RUN chmod +x entrypoint.sh
-# Ensure the script has Unix-style line endings
-RUN sed -i 's/\r$//' entrypoint.sh
-
-CMD ["./entrypoint.sh"]
+CMD ["flask", "run", "--host=0.0.0.0", "--port=5000"]

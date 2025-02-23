@@ -1,56 +1,22 @@
 services:
-  frontend-api:
+  frontend_api:
     build: ./frontend_api
     ports:
       - "5000:5000"
-    environment:
-      - SQLALCHEMY_DATABASE_URI=postgresql://user:password@db:5432/frontend_db
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
     volumes:
       - ./frontend_api:/app
-    networks:
-      - library_network
-    depends_on:
-      db:
-        condition: service_healthy
+    environment:
+      - FLASK_APP=app.py
+      - FLASK_ENV=development
 
-  backend-api:
+  backend_api:
     build: ./backend_api
     ports:
-      - "5001:5001"
-    environment:
-      - SQLALCHEMY_DATABASE_URI=postgresql://user:password@db:5432/backend_db
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
+      - "5001:5000"
     volumes:
       - ./backend_api:/app
-    networks:
-      - library_network
-    depends_on:
-      db:
-        condition: service_healthy
-
-  db:
-    image: postgres:13
     environment:
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_MULTIPLE_DATABASES=frontend_db,backend_db
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./init-multiple-dbs.sh:/docker-entrypoint-initdb.d/init-multiple-dbs.sh
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    networks:
-      - library_network
-
-networks:
-  library_network:
-    driver: bridge
-
-volumes:
-  postgres_data:
+      - FLASK_APP=app.py
+      - FLASK_ENV=development
+    depends_on:
+      - frontend_api
