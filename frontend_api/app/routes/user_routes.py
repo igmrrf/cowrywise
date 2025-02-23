@@ -17,7 +17,7 @@ def enroll_user():
     if not all(k in data for k in ["email", "firstname", "lastname"]):
         return jsonify({"error": "Missing required fields"}), 400
 
-    if User.query.filter_by(email=data["email"]).first():
+    if db.session.query(User).filter_by(email=data["email"]).first():
         return jsonify({"error": "Email already registered"}), 400
 
     user = User(
@@ -45,7 +45,7 @@ def enroll_user():
 
 @user_bp.route("/users", methods=["GET"])
 def list_users():
-    users = User.query.all()
+    users = db.session.query(User)
     return jsonify(
         [
             {

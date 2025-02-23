@@ -1,44 +1,15 @@
-import json
+from datetime import datetime
 import pytest
 import requests
 from unittest.mock import patch
 from app import create_app, db
 from app.models.book import Book, BorrowedBook
-import unittest
-
-
-class TestAdminRoutes(unittest.TestCase):
-    def setUp(self):
-        self.app = create_app()
-        self.app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
-        self.client = self.app.test_client()
-        self.ctx = self.app.app_context()
-        self.ctx.push()
-        db.create_all()
-
-    def tearDown(self):
-        db.session.remove()
-        db.drop_all()
-        self.ctx.pop()
-
-    def test_add_book(self):
-        response = self.client.post(
-            "/admin/books",
-            json={
-                "title": "Test Book",
-                "author": "Test Author",
-                "publisher": "Test Publisher",
-                "category": "Test Category",
-            },
-        )
-        self.assertEqual(response.status_code, 201)
-        self.assertTrue(Book.query.filter_by(title="Test Book").first())
 
 
 @pytest.fixture
 def client():
     """Flask test client with app context and test database."""
-    app = create_app("testing")  # Assuming "testing" config uses SQLite in-memory DB
+    app = create_app()  # Assuming "testing" config uses SQLite in-memory DB
     with app.test_client() as client:
         with app.app_context():
             db.create_all()
@@ -65,7 +36,7 @@ def test_add_book(client, mocker):
         "category": "Fiction",
     }
 
-    response = client.post("/books", json=payload)
+    response = client.post("/admin/books", json=payload)
 
     assert response.status_code == 201
     data = response.json
@@ -88,7 +59,7 @@ def test_add_book(client, mocker):
 def test_add_book_missing_fields(client):
     """Test adding a book with missing required fields."""
     payload = {"title": "Missing Author"}
-    response = client.post("/books", json=payload)
+    response = client.post("/admin/books", json=payload)
     assert response.status_code == 400
     assert "error" in response.json
 
@@ -99,12 +70,12 @@ def test_remove_book(client):
     db.session.add(book)
     db.session.commit()
 
-    response = client.delete(f"/books/{book.id}")
+    response = client.delete(f"/admin/books/{book.id}")
     assert response.status_code == 200
     assert response.json == {"message": "Book removed successfully"}
 
     # Ensure the book is deleted
-    assert Book.query.get(book.id) is None
+    assert db.session.get(Book, book.id) is None
 
 
 @patch("requests.get")
@@ -113,7 +84,7 @@ def test_list_users(mock_get, client):
     mock_get.return_value.status_code = 200
     mock_get.return_value.json.return_value = [{"id": 1, "name": "User One"}]
 
-    response = client.get("/users")
+    response = client.get("/admin/users")
     assert response.status_code == 200
     assert response.json == [{"id": 1, "name": "User One"}]
 
@@ -123,7 +94,7 @@ def test_list_users_failure(mock_get, client):
     """Test failure when frontend API is unavailable."""
     mock_get.side_effect = requests.exceptions.RequestException()
 
-    response = client.get("/users")
+    response = client.get("/admin/users")
     assert response.status_code == 500
     assert response.json == {"error": "Unable to fetch users"}
 
@@ -139,13 +110,13 @@ def test_list_borrowed_books(client):
     borrowed_book = BorrowedBook(
         book_id=book.id,
         user_email="user@example.com",
-        borrow_date="2024-01-01",
-        return_date="2024-02-01",
+        borrow_date=datetime.now(),
+        return_date=datetime.now(),
     )
     db.session.add(borrowed_book)
     db.session.commit()
 
-    response = client.get("/borrowed-books")
+    response = client.get("/admin/borrowed-books")
     assert response.status_code == 200
     assert len(response.json) == 1
     assert response.json[0]["book_title"] == "Borrowed Book"
@@ -164,7 +135,7 @@ def test_list_unavailable_books(client):
     db.session.add(book)
     db.session.commit()
 
-    response = client.get("/unavailable-books")
+    response = client.get("/admin/unavailable-books")
     assert response.status_code == 200
     assert len(response.json) == 1
     assert response.json[0]["title"] == "Unavailable Book"

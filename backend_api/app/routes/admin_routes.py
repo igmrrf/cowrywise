@@ -20,7 +20,7 @@ def sync_with_frontend(action, data):
         # raise self.retry(exc=exc, countdown=60)  # retry after 1 minute
 
 
-@admin_bp.route("/admin/", methods=["GET"])
+@admin_bp.route("/", methods=["GET"])
 def index():
     return jsonify({"health": "healthy"})
 
@@ -28,6 +28,7 @@ def index():
 @admin_bp.route("/books", methods=["POST"])
 def add_book():
     data = request.get_json()
+    print(data)
 
     if not all(k in data for k in ["title", "author", "publisher", "category"]):
         return jsonify({"error": "Missing required fields"}), 400
@@ -39,7 +40,6 @@ def add_book():
         category=data["category"],
     )
 
-    book = Book(title="fish")
     db.session.add(book)
     db.session.commit()
 
@@ -79,7 +79,9 @@ def add_book():
 
 @admin_bp.route("/books/<int:book_id>", methods=["DELETE"])
 def remove_book(book_id):
-    book = Book.query.get_or_404(book_id)
+    book = db.session.get(Book, book_id)
+    if not book:
+        return jsonify({"error": "Book not found"})
 
     db.session.delete(book)
     db.session.commit()

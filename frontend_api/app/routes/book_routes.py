@@ -23,7 +23,7 @@ def list_books():
     publisher = request.args.get("publisher")
     category = request.args.get("category")
 
-    query = Book.query.filter_by(available=True)
+    query = db.session.query(Book).filter_by(available=True)
 
     if publisher:
         query = query.filter_by(publisher=publisher)
@@ -47,7 +47,9 @@ def list_books():
 
 @book_bp.route("/books/<int:book_id>", methods=["GET"])
 def get_book(book_id):
-    book = Book.query.get_or_404(book_id)
+    book = db.session.get(Book, book_id)
+    if not book:
+        raise ResourceNotFoundError("Book", book_id)
     return jsonify(
         {
             "id": book.id,
@@ -70,11 +72,11 @@ def borrow_book(book_id):
         if "user_id" not in data or "days" not in data:
             raise ValidationError("Missing required fields: user_id and days")
 
-        book = Book.query.get(book_id)
+        book = db.session.get(Book, book_id)
         if not book:
             raise ResourceNotFoundError("Book", book_id)
 
-        user = User.query.get(data["user_id"])
+        user = db.session.get(User, data["user_id"])
         if not user:
             raise ResourceNotFoundError("User", data["user_id"])
 
@@ -88,7 +90,7 @@ def borrow_book(book_id):
         except ValueError:
             raise ValidationError("Days must be a valid number")
 
-        return_date = datetime.utcnow() + timedelta(days=borrow_days)
+        return_date = datetime.now() + timedelta(days=borrow_days)
 
         borrowed_book = BorrowedBook(
             book_id=book.id, user_id=user.id, return_date=return_date
@@ -128,7 +130,7 @@ def sync_books():
         db.session.add(book)
 
     elif data["action"] == "delete":
-        book = Book.query.get(data["book_id"])
+        book = db.session.get(Book, data["book_id"])
         if book:
             db.session.delete(book)
 

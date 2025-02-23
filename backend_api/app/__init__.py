@@ -2,6 +2,8 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 
+from app.utils.errors import LibraryError, handle_library_error
+
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -19,5 +21,6 @@ def create_app():
     from app.routes.admin_routes import admin_bp
 
     app.register_blueprint(admin_bp, url_prefix="/admin")
+    app.register_error_handler(LibraryError, handle_library_error)
 
     return app

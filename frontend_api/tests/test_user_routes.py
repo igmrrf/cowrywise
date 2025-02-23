@@ -1,5 +1,4 @@
 import pytest
-import json
 from app import create_app, db
 from app.models.user import User
 
@@ -7,7 +6,7 @@ from app.models.user import User
 @pytest.fixture
 def client():
     """Flask test client with a test database."""
-    app = create_app("testing")  # Assume a test config with SQLite in-memory
+    app = create_app()  # Assume a test config with SQLite in-memory
     with app.test_client() as client:
         with app.app_context():
             db.create_all()
@@ -81,4 +80,3 @@ def test_list_users(client):
     assert len(response.json) == 2
     assert response.json[0]["email"] == "user1@example.com"
     assert response.json[1]["email"] == "user2@example.com"
-
