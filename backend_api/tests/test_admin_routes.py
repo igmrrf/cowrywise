@@ -95,7 +95,7 @@ def test_list_users_failure(mock_get, client):
     mock_get.side_effect = requests.exceptions.RequestException()
 
     response = client.get("/admin/users")
-    assert response.status_code == 500
+    assert response.status_code == 400
     assert response.json == {"error": "Unable to fetch users"}
 
 

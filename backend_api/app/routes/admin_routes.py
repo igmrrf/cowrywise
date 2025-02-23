@@ -1,6 +1,6 @@
 import requests
 from flask import Blueprint, jsonify, request
-from app.utils.errors import LibraryError
+from app.utils.errors import LibraryError, ResourceNotFoundError, ValidationError
 from app import db
 from app.models.book import Book, BorrowedBook
 
@@ -16,8 +16,7 @@ def sync_with_frontend(action, data):
         )
         response.raise_for_status()
     except requests.exceptions.RequestException as exc:
-        return
-        # raise self.retry(exc=exc, countdown=60)  # retry after 1 minute
+        raise LibraryError("sync failed", 500)
 
 
 @admin_bp.route("/", methods=["GET"])
@@ -31,7 +30,7 @@ def add_book():
     print(data)
 
     if not all(k in data for k in ["title", "author", "publisher", "category"]):
-        return jsonify({"error": "Missing required fields"}), 400
+        raise ValidationError("Missing required fields")
 
     book = Book(
         title=data["title"],
@@ -81,7 +80,7 @@ def add_book():
 def remove_book(book_id):
     book = db.session.get(Book, book_id)
     if not book:
-        return jsonify({"error": "Book not found"})
+        raise ResourceNotFoundError("Book", book_id)
 
     db.session.delete(book)
     db.session.commit()
@@ -105,7 +104,7 @@ def list_users():
         response = requests.get(f"{FRONTEND_API_URL}/users")
         return jsonify(response.json())
     except requests.exceptions.RequestException:
-        return jsonify({"error": "Unable to fetch users"}), 500
+        raise LibraryError("Unable to fetch users")
 
 
 @admin_bp.route("/borrowed-books", methods=["GET"])

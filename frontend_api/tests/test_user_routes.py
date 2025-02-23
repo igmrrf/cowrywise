@@ -48,7 +48,7 @@ def test_enroll_user_missing_fields(client):
     response = client.post("/users", json=payload)
 
     assert response.status_code == 400
-    assert "Missing required fields" in response.json["error"]
+    assert "Missing required fields" in response.json[0]["error"]
 
 
 def test_enroll_user_duplicate_email(client):
@@ -65,7 +65,7 @@ def test_enroll_user_duplicate_email(client):
     response = client.post("/users", json=payload)
 
     assert response.status_code == 400
-    assert "Email already registered" in response.json["error"]
+    assert "Email already registered" in response.json[0]["error"]
 
 
 def test_list_users(client):
