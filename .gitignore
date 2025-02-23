@@ -1,0 +1,71 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+.env/
+*.env
+*.venv
+
+# Distribution / packaging
+.Python
+dist/
+build/
+*.egg-info/
+
+# Flask-specific
+instance/
+config.py
+settings.py
+.env.local
+
+# Log files
+logs/
+*.log
+
+# Database files
+*.sqlite3
+*.db
+
+# Cache files
+.cache/
+*.pyc
+*.pyo
+
+# Node.js dependencies (if frontend is included)
+node_modules/
+
+# Editor-specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-workspace
+
+# Docker
+*.tar
+*.img
+.dockerignore
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+
+# Monorepo dependencies (if using poetry, pipenv, or yarn workspaces)
+**/Pipfile.lock
+**/poetry.lock
+**/yarn.lock
+**/package-lock.json
+
+# GitHub Actions / CI artifacts
+.github/workflows/*.log
+
+# Coverage reports
+.coverage
+htmlcov/
+
+# Terraform (if infra as code is used)
+.terraform/
+*.tfstate
+*.tfstate.backup
